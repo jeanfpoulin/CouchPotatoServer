@@ -25,7 +25,7 @@ class QualityPlugin(Plugin):
     qualities = [
 		{'identifier': '2160p', 'hd': True, 'allow_3d': True, 'size': (10000, 650000), 'median_size': 20000, 'label': '2160p', 'width': 3840, 'height': 2160, 'alternative': [], 'allow': [], 'ext':['mkv'], 'tags': ['x264', 'h264', '2160']},
         {'identifier': 'bd50', 'hd': True, 'allow_3d': True, 'size': (20000, 60000), 'median_size': 40000, 'label': 'BR-Disk', 'alternative': ['bd25', ('br', 'disk')], 'allow': ['1080p'], 'ext':['iso', 'img'], 'tags': ['bdmv', 'certificate', ('complete', 'bluray'), 'avc', 'mvc']},
-        {'identifier': '1080p', 'hd': True, 'allow_3d': True, 'size': (4000, 20000), 'median_size': 10000, 'label': '1080p', 'width': 1920, 'height': 1080, 'alternative': [], 'allow': [], 'ext':['mkv', 'm2ts', 'ts'], 'tags': ['m2ts', 'x264', 'h264', '1080']},
+        {'identifier': '1080p', 'hd': True, 'allow_3d': True, 'size': (4000, 20000), 'median_size': 10000, 'label': '1080p', 'width': 1920, 'height': 1080, 'alternative': [], 'allow': [], 'ext':['mkv', 'm2ts', 'ts'], 'tags': ['m2ts', 'x264', 'h264', '1080', ('1080p', 'webrip'), ('1080p', 'web-dl')]},
         {'identifier': '720p', 'hd': True, 'allow_3d': True, 'size': (3000, 10000), 'median_size': 5500, 'label': '720p', 'width': 1280, 'height': 720, 'alternative': [], 'allow': [], 'ext':['mkv', 'ts'], 'tags': ['x264', 'h264', '720']},
         {'identifier': 'brrip', 'hd': True, 'allow_3d': True, 'size': (700, 7000), 'median_size': 2000, 'label': 'BR-Rip', 'alternative': ['bdrip', ('br', 'rip'), 'hdtv', 'hdrip'], 'allow': ['720p', '1080p', '2160p'], 'ext':['mp4', 'avi'], 'tags': ['webdl', ('web', 'dl')]},
         {'identifier': 'dvdr', 'size': (3000, 10000), 'median_size': 4500, 'label': 'DVD-R', 'alternative': ['br2dvd', ('dvd', 'r')], 'allow': [], 'ext':['iso', 'img', 'vob'], 'tags': ['pal', 'ntsc', 'video_ts', 'audio_ts', ('dvd', 'r'), 'dvd9']},
@@ -218,6 +218,7 @@ class QualityPlugin(Plugin):
         if use_cache:
             cached = self.getCache(cache_key)
             if cached and len(extra) == 0:
+                log.error("Cached quality found %s", cache_key)
                 return cached
 
         qualities = self.all()
@@ -272,6 +273,7 @@ class QualityPlugin(Plugin):
                 has_non_zero += 1
 
         if not has_non_zero:
+            log.error("No Score Found %s", cache_key)
             return None
 
         heighest_quality = max(score, key = lambda p: score[p]['score'])
@@ -281,8 +283,11 @@ class QualityPlugin(Plugin):
                     quality['is_3d'] = False
                     if score[heighest_quality].get('3d'):
                         quality['is_3d'] = True
+                    log.error("Found result %s", cache_key)
+                    log.error("With quality %s", quality)
                     return self.setCache(cache_key, quality)
 
+        log.error("No Good Quality Found %s", cache_key)
         return None
 
     def containsTagScore(self, quality, words, cur_file = ''):

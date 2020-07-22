@@ -50,7 +50,7 @@ class Base(TorrentProvider):
         current_page = 1
         while current_page <= pages and not self.shuttingDown():
             data = self.getHTMLData(base_url % (freeleech, current_page), headers = self.getRequestHeaders())
-            
+
             if data:
                 html = BeautifulSoup(data)
 
@@ -65,6 +65,7 @@ class Base(TorrentProvider):
                     result_table = html.find('table', id="torrents")
                     
                     if not result_table or 'nothing found!' in data.lower():
+                        log.error("No torrents found for %s", base_url)
                         return
 
                     entries = result_table.find_all('tr')
@@ -84,6 +85,8 @@ class Base(TorrentProvider):
                         torrent_size = self.parseSize(result.find_all('td')[5].string)
                         torrent_seeders = tryInt(result.find('td', attrs = {'class': 'ac t_seeders'}).string)
                         torrent_leechers = tryInt(result.find('td', attrs = {'class': 'ac t_leechers'}).string)
+
+                        log.error("Found torrent %s", torrent_name)
 
                         results.append({
                             'id': torrent_id,
